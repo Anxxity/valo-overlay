@@ -1,0 +1,99 @@
+{
+  "scene": "intro",
+  "team_a": {
+    "name": "remin",
+    "score": 0,
+    "logo": "https://www.youtube.com/watch?v=R0O-xC3UptA",
+    "players": [
+      {
+        "name": "test",
+        "agent": "Sage",
+        "kills": 4,
+        "deaths": 4,
+        "assists": 1,
+        "weapon": ""
+      },
+      {
+        "name": "remin",
+        "agent": "Viper",
+        "kills": 1,
+        "deaths": 1,
+        "assists": 1,
+        "weapon": ""
+      },
+      {
+        "name": "ENOCK",
+        "agent": "",
+        "kills": 0,
+        "deaths": 0,
+        "assists": 0,
+        "weapon": ""
+      },
+      {
+        "name": "HEXI",
+        "agent": "",
+        "kills": 0,
+        "deaths": 0,
+        "assists": 0,
+        "weapon": ""
+      },
+      {
+        "name": "DAVOO",
+        "agent": "",
+        "kills": 2,
+        "deaths": 6,
+        "assists": 0,
+        "weapon": ""
+      }
+    ]
+  },
+  "team_b": {
+    "name": "remin 2",
+    "score": 3,
+    "logo": "",
+    "players": [
+      {
+        "name": "FRAE",
+        "agent": "Jett",
+        "kills": 3,
+        "deaths": 2,
+        "assists": 0,
+        "weapon": ""
+      },
+      {
+        "name": "remin",
+        "agent": "",
+        "kills": 2,
+        "deaths": 2,
+        "assists": 0,
+        "weapon": ""
+      },
+      {
+        "name": "remin",
+        "agent": "",
+        "kills": 0,
+        "deaths": 0,
+        "assists": 0,
+        "weapon": ""
+      },
+      {
+        "name": "Player 4",
+        "agent": "",
+        "kills": 3,
+        "deaths": 2,
+        "assists": 0,
+        "weapon": ""
+      },
+      {
+        "name": "remin",
+        "agent": "",
+        "kills": 4,
+        "deaths": 4,
+        "assists": 0,
+        "weapon": ""
+      }
+    ]
+  },
+  "match_time": "23",
+  "killfeed": []
+}

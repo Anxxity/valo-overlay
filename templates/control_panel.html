@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Tournament Control Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-tab {
+            @apply px-4 py-2 rounded-t-lg cursor-pointer transition-colors;
+        }
+        .nav-tab.active {
+            @apply bg-blue-600 text-white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Valorant Tournament Control Panel</h1>
+        
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-2 mb-6 border-b border-gray-300">
+            <div class="nav-tab active" data-tab="match">Match</div>
+            <div class="nav-tab" data-tab="teams">Teams</div>
+            <div class="nav-tab" data-tab="players">Players</div>
+            <div class="nav-tab" data-tab="overlay">Overlay</div>
+        </div>
+
+        <!-- Main Form -->
+        <form id="controlForm" class="bg-white p-6 rounded-lg shadow-md">
+            <!-- Scene Selection -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2">Current Scene</label>
+                <div class="grid grid-cols-4 gap-2">
+                    <button type="button" class="scene-btn bg-blue-600 text-white py-2 px-4 rounded" data-scene="intro">Intro</button>
+                    <button type="button" class="scene-btn bg-blue-600 text-white py-2 px-4 rounded" data-scene="match">Match</button>
+                    <button type="button" class="scene-btn bg-blue-600 text-white py-2 px-4 rounded" data-scene="scoreboard">Scoreboard</button>
+                    <button type="button" class="scene-btn bg-blue-600 text-white py-4 px-4 rounded" data-scene="winner">Winner</button>
+                </div>
+            </div>
+
+            <!-- Team Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Team A -->
+                <div class="border p-4 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4 text-red-600">Team A</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Team Name</label>
+                            <input type="text" name="team_a_name" value="{{ data.team_a.name }}" class="w-full p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Score</label>
+                            <input type="number" name="team_a_score" value="{{ data.team_a.score }}" class="w-20 p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Logo URL</label>
+                            <input type="text" name="team_a_logo" value="{{ data.team_a.logo }}" class="w-full p-2 border rounded">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team B -->
+                <div class="border p-4 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4 text-blue-600">Team B</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Team Name</label>
+                            <input type="text" name="team_b_name" value="{{ data.team_b.name }}" class="w-full p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Score</label>
+                            <input type="number" name="team_b_score" value="{{ data.team_b.score }}" class="w-20 p-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Logo URL</label>
+                            <input type="text" name="team_b_logo" value="{{ data.team_b.logo }}" class="w-full p-2 border rounded">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Information -->
+            <div class="mb-6">
+                <h3 class="text-xl font-bold mb-4">Players</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Team A Players -->
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-red-600">Team A Players</h4>
+                        {% for i in range(5) %}
+                        <div class="border p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2">Player {{ i+1 }}</h5>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-sm text-gray-600">Name</label>
+                                    <input type="text" name="team_a_player_{{i}}_name" value="{{ data.team_a.players[i].name }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Agent</label>
+                                    <div class="relative">
+                                        <select name="team_a_player_{{i}}_agent" class="w-full p-1 border rounded appearance-none bg-white">
+                                            <option value="">Select Agent</option>
+                                            <option value="Jett">Jett</option>
+                                            <option value="Phoenix">Phoenix</option>
+                                            <option value="Sage">Sage</option>
+                                            <option value="Sova">Sova</option>
+                                            <option value="Brimstone">Brimstone</option>
+                                            <option value="Viper">Viper</option>
+                                            <option value="Cypher">Cypher</option>
+                                            <option value="Reyna">Reyna</option>
+                                            <option value="Killjoy">Killjoy</option>
+                                            <option value="Breach">Breach</option>
+                                            <option value="Omen">Omen</option>
+                                            <option value="Raze">Raze</option>
+                                            <option value="Skye">Skye</option>
+                                            <option value="Yoru">Yoru</option>
+                                            <option value="Astra">Astra</option>
+                                            <option value="KAY/O">KAY/O</option>
+                                            <option value="Chamber">Chamber</option>
+                                            <option value="Neon">Neon</option>
+                                            <option value="Fade">Fade</option>
+                                            <option value="Harbor">Harbor</option>
+                                            <option value="Gekko">Gekko</option>
+                                            <option value="Deadlock">Deadlock</option>
+                                            <option value="Iso">Iso</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Kills</label>
+                                    <input type="number" name="team_a_player_{{i}}_kills" value="{{ data.team_a.players[i].kills }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Deaths</label>
+                                    <input type="number" name="team_a_player_{{i}}_deaths" value="{{ data.team_a.players[i].deaths }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Assists</label>
+                                    <input type="number" name="team_a_player_{{i}}_assists" value="{{ data.team_a.players[i].assists }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Weapon</label>
+                                    <div class="relative">
+                                        <select name="team_a_player_{{i}}_weapon" class="w-full p-1 border rounded appearance-none bg-white">
+                                            <option value="">Select Weapon</option>
+                                            <option value="Classic">Classic</option>
+                                            <option value="Shorty">Shorty</option>
+                                            <option value="Frenzy">Frenzy</option>
+                                            <option value="Ghost">Ghost</option>
+                                            <option value="Sheriff">Sheriff</option>
+                                            <option value="Stinger">Stinger</option>
+                                            <option value="Spectre">Spectre</option>
+                                            <option value="Bucky">Bucky</option>
+                                            <option value="Judge">Judge</option>
+                                            <option value="Bulldog">Bulldog</option>
+                                            <option value="Guardian">Guardian</option>
+                                            <option value="Phantom">Phantom</option>
+                                            <option value="Vandal">Vandal</option>
+                                            <option value="Marshal">Marshal</option>
+                                            <option value="Operator">Operator</option>
+                                            <option value="Ares">Ares</option>
+                                            <option value="Odin">Odin</option>
+                                            <option value="Melee">Melee</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Team B Players -->
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-blue-600">Team B Players</h4>
+                        {% for i in range(5) %}
+                        <div class="border p-4 rounded-lg">
+                            <h5 class="font-semibold mb-2">Player {{ i+1 }}</h5>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-sm text-gray-600">Name</label>
+                                    <input type="text" name="team_b_player_{{i}}_name" value="{{ data.team_b.players[i].name }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Agent</label>
+                                    <div class="relative">
+                                        <select name="team_b_player_{{i}}_agent" class="w-full p-1 border rounded appearance-none bg-white">
+                                            <option value="">Select Agent</option>
+                                            <option value="Jett">Jett</option>
+                                            <option value="Phoenix">Phoenix</option>
+                                            <option value="Sage">Sage</option>
+                                            <option value="Sova">Sova</option>
+                                            <option value="Brimstone">Brimstone</option>
+                                            <option value="Viper">Viper</option>
+                                            <option value="Cypher">Cypher</option>
+                                            <option value="Reyna">Reyna</option>
+                                            <option value="Killjoy">Killjoy</option>
+                                            <option value="Breach">Breach</option>
+                                            <option value="Omen">Omen</option>
+                                            <option value="Raze">Raze</option>
+                                            <option value="Skye">Skye</option>
+                                            <option value="Yoru">Yoru</option>
+                                            <option value="Astra">Astra</option>
+                                            <option value="KAY/O">KAY/O</option>
+                                            <option value="Chamber">Chamber</option>
+                                            <option value="Neon">Neon</option>
+                                            <option value="Fade">Fade</option>
+                                            <option value="Harbor">Harbor</option>
+                                            <option value="Gekko">Gekko</option>
+                                            <option value="Deadlock">Deadlock</option>
+                                            <option value="Iso">Iso</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Kills</label>
+                                    <input type="number" name="team_b_player_{{i}}_kills" value="{{ data.team_b.players[i].kills }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Deaths</label>
+                                    <input type="number" name="team_b_player_{{i}}_deaths" value="{{ data.team_b.players[i].deaths }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Assists</label>
+                                    <input type="number" name="team_b_player_{{i}}_assists" value="{{ data.team_b.players[i].assists }}" class="w-full p-1 border rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Weapon</label>
+                                    <div class="relative">
+                                        <select name="team_b_player_{{i}}_weapon" class="w-full p-1 border rounded appearance-none bg-white">
+                                            <option value="">Select Weapon</option>
+                                            <option value="Classic">Classic</option>
+                                            <option value="Shorty">Shorty</option>
+                                            <option value="Frenzy">Frenzy</option>
+                                            <option value="Ghost">Ghost</option>
+                                            <option value="Sheriff">Sheriff</option>
+                                            <option value="Stinger">Stinger</option>
+                                            <option value="Spectre">Spectre</option>
+                                            <option value="Bucky">Bucky</option>
+                                            <option value="Judge">Judge</option>
+                                            <option value="Bulldog">Bulldog</option>
+                                            <option value="Guardian">Guardian</option>
+                                            <option value="Phantom">Phantom</option>
+                                            <option value="Vandal">Vandal</option>
+                                            <option value="Marshal">Marshal</option>
+                                            <option value="Operator">Operator</option>
+                                            <option value="Ares">Ares</option>
+                                            <option value="Odin">Odin</option>
+                                            <option value="Melee">Melee</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Timer -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2">Match Timer (MM:SS)</label>
+                <input type="text" name="match_time" value="{{ data.match_time }}" class="w-32 p-2 border rounded">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="resetBtn" class="bg-gray-500 text-white py-2 px-6 rounded hover:bg-gray-600">Reset</button>
+                <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700">save values</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Load agent selections from localStorage
+        const loadAgentSelections = () => {
+            try {
+                const saved = localStorage.getItem('valo_agent_selections');
+                return saved ? JSON.parse(saved) : {};
+            } catch (e) {
+                console.error('Error loading agent selections:', e);
+                return {};
+            }
+        };
+
+        // Save agent selections to localStorage
+        const saveAgentSelections = (selections) => {
+            try {
+                localStorage.setItem('valo_agent_selections', JSON.stringify(selections));
+            } catch (e) {
+                console.error('Error saving agent selections:', e);
+            }
+        };
+
+        // Initialize agent selections
+        let agentSelections = loadAgentSelections();
+
+        // Tab switching
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Scene switching
+        document.querySelectorAll('.scene-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('bg-blue-700', 'ring-2', 'ring-blue-300'));
+                btn.classList.add('bg-blue-700', 'ring-2', 'ring-blue-300');
+                
+                // Update the scene in the overlay
+                const data = getFormData();
+                data.scene = btn.dataset.scene;
+                await updateOverlay(data);
+            });
+        });
+
+        // Form submission
+        const form = document.getElementById('controlForm');
+        
+        // Function to get current form data
+        function getFormData() {
+            const formData = new FormData(form);
+            const data = {
+                scene: document.querySelector('.scene-btn.bg-blue-700')?.dataset.scene || 'match',
+                team_a: {
+                    name: formData.get('team_a_name') || 'Team A',
+                    score: parseInt(formData.get('team_a_score') || 0),
+                    logo: formData.get('team_a_logo') || '',
+                    players: Array(5).fill().map((_, i) => {
+                        const agentKey = `team_a_${i}_agent`;
+                        const agent = formData.get(`team_a_player_${i}_agent`) || agentSelections[agentKey] || '';
+                        // Update agent selections
+                        if (agent) agentSelections[agentKey] = agent;
+                        
+                        return {
+                            name: formData.get(`team_a_player_${i}_name`) || `Player ${i + 1}`,
+                            agent: agent,
+                            kills: parseInt(formData.get(`team_a_player_${i}_kills`) || 0),
+                            deaths: parseInt(formData.get(`team_a_player_${i}_deaths`) || 0),
+                            assists: parseInt(formData.get(`team_a_player_${i}_assists`) || 0),
+                            weapon: formData.get(`team_a_player_${i}_weapon`) || ''
+                        };
+                    })
+                },
+                team_b: {
+                    name: formData.get('team_b_name') || 'Team B',
+                    score: parseInt(formData.get('team_b_score') || 0),
+                    logo: formData.get('team_b_logo') || '',
+                    players: Array(5).fill().map((_, i) => {
+                        const agentKey = `team_b_${i}_agent`;
+                        const agent = formData.get(`team_b_player_${i}_agent`) || agentSelections[agentKey] || '';
+                        // Update agent selections
+                        if (agent) agentSelections[agentKey] = agent;
+                        
+                        return {
+                            name: formData.get(`team_b_player_${i}_name`) || `Player ${i + 1}`,
+                            agent: agent,
+                            kills: parseInt(formData.get(`team_b_player_${i}_kills`) || 0),
+                            deaths: parseInt(formData.get(`team_b_player_${i}_deaths`) || 0),
+                            assists: parseInt(formData.get(`team_b_player_${i}_assists`) || 0),
+                            weapon: formData.get(`team_b_player_${i}_weapon`) || ''
+                        };
+                    })
+                },
+                match_time: formData.get('match_time') || '00:00'
+            };
+            
+            // Save updated agent selections
+            saveAgentSelections(agentSelections);
+            return data;
+        }
+        
+        // Initialize agent dropdowns with saved values
+        const initAgentSelections = () => {
+            // For Team A
+            for (let i = 0; i < 5; i++) {
+                const agentKey = `team_a_${i}_agent`;
+                const select = document.querySelector(`select[name="team_a_player_${i}_agent"]`);
+                if (select) {
+                    // Try to get value from localStorage first, then from the element's value attribute
+                    const savedAgent = agentSelections[agentKey] || select.getAttribute('value') || '';
+                    if (savedAgent) {
+                        select.value = savedAgent;
+                        // Update agentSelections to match the actual value
+                        agentSelections[agentKey] = savedAgent;
+                    }
+                }
+            }
+            
+            // For Team B
+            for (let i = 0; i < 5; i++) {
+                const agentKey = `team_b_${i}_agent`;
+                const select = document.querySelector(`select[name="team_b_player_${i}_agent"]`);
+                if (select) {
+                    const savedAgent = agentSelections[agentKey] || select.getAttribute('value') || '';
+                    if (savedAgent) {
+                        select.value = savedAgent;
+                        agentSelections[agentKey] = savedAgent;
+                    }
+                }
+            }
+            
+            // Save any updates to localStorage
+            saveAgentSelections(agentSelections);
+        };
+        
+        // Initialize agent selections when the page loads
+        document.addEventListener('DOMContentLoaded', initAgentSelections);
+        
+        // Also initialize weapon dropdowns if needed
+        document.querySelectorAll('select[name$="_weapon"]').forEach(select => {
+            const value = select.getAttribute('value');
+            if (value) {
+                select.value = value;
+            }
+        });
+
+        // Update form when any input changes
+        form.addEventListener('input', debounce(() => {
+            const data = getFormData();
+            updateOverlay(data);
+        }, 300));
+        
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = getFormData();
+            await updateOverlay(data);
+        });
+        
+        // Debounce function to prevent too many rapid updates
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+        
+        // Update overlay with new data
+        async function updateOverlay(data) {
+            try {
+                const response = await fetch('/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showNotification('Overlay updated successfully!', 'green');
+                    return true;
+                } else {
+                    throw new Error('Failed to update overlay');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Failed to update overlay', 'red');
+                return false;
+            }
+        }
+
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all data? This will also clear saved agent selections.')) {
+                // Clear agent selections
+                agentSelections = {};
+                saveAgentSelections(agentSelections);
+                
+                // Reset server data
+                fetch('/reset', { method: 'POST' })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        }
+                    });
+            }
+        });
+
+        // Show notification
+        function showNotification(message, color = 'green') {
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-semibold bg-${color}-500`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Function to update form fields with new data
+        function updateFormFields(data) {
+            // Update team A fields
+            document.querySelector('input[name="team_a_name"]').value = data.team_a.name || '';
+            document.querySelector('input[name="team_a_score"]').value = data.team_a.score || 0;
+            document.querySelector('input[name="team_a_logo"]').value = data.team_a.logo || '';
+            
+            // Update team B fields
+            document.querySelector('input[name="team_b_name"]').value = data.team_b.name || '';
+            document.querySelector('input[name="team_b_score"]').value = data.team_b.score || 0;
+            document.querySelector('input[name="team_b_logo"]').value = data.team_b.logo || '';
+            
+            // Update player fields
+            data.team_a.players.forEach((player, i) => {
+                const agentKey = `team_a_${i}_agent`;
+                const savedAgent = agentSelections[agentKey] || '';
+                const agent = player.agent || savedAgent;
+                
+                document.querySelector(`input[name="team_a_player_${i}_name"]`).value = player.name || '';
+                const agentSelect = document.querySelector(`select[name="team_a_player_${i}_agent"]`);
+                if (agentSelect) {
+                    agentSelect.value = agent;
+                    // Update agent selection if it was changed
+                    if (agent && agent !== savedAgent) {
+                        agentSelections[agentKey] = agent;
+                    }
+                }
+                document.querySelector(`input[name="team_a_player_${i}_kills"]`).value = player.kills || 0;
+                document.querySelector(`input[name="team_a_player_${i}_deaths"]`).value = player.deaths || 0;
+                document.querySelector(`input[name="team_a_player_${i}_assists"]`).value = player.assists || 0;
+                document.querySelector(`input[name="team_a_player_${i}_weapon"]`).value = player.weapon || '';
+            });
+            
+            data.team_b.players.forEach((player, i) => {
+                const agentKey = `team_b_${i}_agent`;
+                const savedAgent = agentSelections[agentKey] || '';
+                const agent = player.agent || savedAgent;
+                
+                document.querySelector(`input[name="team_b_player_${i}_name"]`).value = player.name || '';
+                const agentSelect = document.querySelector(`select[name="team_b_player_${i}_agent"]`);
+                if (agentSelect) {
+                    agentSelect.value = agent;
+                    // Update agent selection if it was changed
+                    if (agent && agent !== savedAgent) {
+                        agentSelections[agentKey] = agent;
+                    }
+                }
+                document.querySelector(`input[name="team_b_player_${i}_kills"]`).value = player.kills || 0;
+                document.querySelector(`input[name="team_b_player_${i}_deaths"]`).value = player.deaths || 0;
+                document.querySelector(`input[name="team_b_player_${i}_assists"]`).value = player.assists || 0;
+                document.querySelector(`input[name="team_b_player_${i}_weapon"]`).value = player.weapon || '';
+            });
+            
+            // Save any updated agent selections
+            saveAgentSelections(agentSelections);
+            
+            // Update match time
+            if (data.match_time) {
+                document.querySelector('input[name="match_time"]').value = data.match_time;
+            }
+            
+            // Update active scene button
+            if (data.scene) {
+                document.querySelectorAll('.scene-btn').forEach(btn => {
+                    if (btn.dataset.scene === data.scene) {
+                        btn.classList.add('bg-blue-700', 'ring-2', 'ring-blue-300');
+                    } else {
+                        btn.classList.remove('bg-blue-700', 'ring-2', 'ring-blue-300');
+                    }
+                });
+            }
+        }
+        
+        // WebSocket connection for real-time updates
+        const ws = new WebSocket(`ws://${window.location.host}/ws`);
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('Received update:', data);
+            updateFormFields(data);
+        };
+        
+        // Request initial data
+        fetch('/')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const dataScript = doc.querySelector('script#initial-data');
+                if (dataScript) {
+                    const initialData = JSON.parse(dataScript.textContent);
+                    // Update form fields with initial data
+                    updateFormFields(initialData);
+                    
+                    // After updating form fields, ensure agent selections are properly set
+                    setTimeout(() => {
+                        initAgentSelections();
+                    }, 100);
+                }
+            })
+            .catch(error => console.error('Error fetching initial data:', error));
+    </script>
+</body>
+</html>

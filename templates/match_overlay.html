@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Esports Match Overlay — VCT Style</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --accent: #ff4655;
+      --dark: #0e0e10;
+      --light: #ffffff;
+      --secondary: #1f1f23;
+      --glass: rgba(20,20,25,0.55);
+    }
+    *{box-sizing:border-box;font-family:Poppins, sans-serif}
+    html,body{margin:0;height:100%;background:#000;overflow:hidden;color:#fff}
+
+    .bg-image{position:fixed;inset:0;z-index:0;overflow:hidden}
+    .bg-image img{width:100%;height:100%;object-fit:cover;filter:brightness(0.25) saturate(1.2);transition:opacity 0.5s ease-in-out}
+
+    .tourney-logo{position:absolute;top:5px;left:50%;transform:translateX(-50%);z-index:10;text-align:center}
+    .tourney-logo img{height:90px;display:block;margin:0 auto}
+    .tourney-heading{font-size:22px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:8px;color:var(--accent)}
+
+    .sponsor{position:absolute;bottom:90px;z-index:10}
+    .sponsor.left{left:30px}
+    .sponsor.right{right:30px}
+    .sponsor img{height:80px;filter:drop-shadow(0 0 10px rgba(0,0,0,0.7))}
+
+    .match-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:40px;z-index:5;background:var(--glass);border:2px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 60px;backdrop-filter:blur(8px);box-shadow:0 0 50px rgba(0,0,0,0.6)}
+
+    .team{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;width:280px}
+    .team img{width:120px;height:120px;object-fit:contain;border-radius:12px;background:#fff;padding:10px}
+    .team h2{margin:0;font-size:26px;font-weight:700;text-transform:uppercase}
+
+    .vs{font-size:54px;font-weight:800;color:var(--accent);text-shadow:0 0 20px rgba(255,70,85,0.7)}
+
+    .info-bar{position:absolute;top:calc(50% + 170px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:40px;padding:14px 28px;background:var(--secondary);border-radius:50px;font-weight:600;letter-spacing:0.5px}
+
+    .info-bar div strong{color:var(--accent)}
+
+    #matchTimer{font-size:22px;font-weight:700;color:var(--accent)}
+
+    .control-panel{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(0,0,0,0.6);padding:8px 16px;border-radius:12px;font-size:13px;display:flex;align-items:center;gap:10px}
+    .control-panel select{padding:4px 8px;border:none;border-radius:5px;background:#1f1f23;color:#fff}
+    .switch{position:relative;display:inline-block;width:36px;height:20px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:20px}
+    .slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:white;transition:.4s;border-radius:50%}
+    input:checked + .slider{background-color:var(--accent)}
+    input:checked + .slider:before{transform:translateX(16px)}
+
+    @media (max-width:900px){
+      .match-card{flex-direction:column;padding:20px}
+      .team{width:auto}
+      .info-bar{flex-direction:column;gap:10px;top:calc(50% + 200px)}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-image" id="bgImage">
+    <img src="assets/maps/Ascent.jpg" alt="Background">
+  </div>
+
+  <div class="tourney-logo">
+    <img src="assets/tournament_logo.png" alt="Tournament">
+    <div class="tourney-heading">Valorant Championship Finals</div>
+  </div>
+
+  <div class="match-card">
+    <div class="team" id="teamA">
+      <img src="assets/team_a.png" alt="Team A">
+      <h2 id="teamAName">Team Alpha</h2>
+    </div>
+    <div class="vs">VS</div>
+    <div class="team" id="teamB">
+      <img src="assets/team_b.png" alt="Team B">
+      <h2 id="teamBName">Team Bravo</h2>
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <div>MAP: <strong id="mapName">Ascent</strong></div>
+    <div>ROUND STARTS IN: <strong id="matchTimer">30</strong>s</div>
+  </div>
+
+  <div class="sponsor left"><img src="assets/sponsor_left.png" alt="Left Sponsor"></div>
+  <div class="sponsor right"><img src="assets/sponsor_right.png" alt="Right Sponsor"></div>
+
+  <div class="control-panel">
+    <label>Team A</label>
+    <select id="selectTeamA">
+      <option>Team Alpha</option>
+      <option>Team Bravo</option>
+      <option>Team Delta</option>
+      <option>Team Phoenix</option>
+    </select>
+    <label>Team B</label>
+    <select id="selectTeamB">
+      <option>Team Bravo</option>
+      <option>Team Alpha</option>
+      <option>Team Delta</option>
+      <option>Team Phoenix</option>
+    </select>
+    <label>Map</label>
+    <select id="selectMap">
+      <option>Ascent</option>
+      <option>Bind</option>
+      <option>Haven</option>
+      <option>Split</option>
+    </select>
+    <label style="font-size:12px">Start Timer</label>
+    <label class="switch"><input type="checkbox" id="startTimer"><span class="slider"></span></label>
+  </div>
+
+  <script>
+    const timerEl = document.getElementById('matchTimer');
+    const bgImage = document.querySelector('#bgImage img');
+    let interval;
+
+    function startCountdown(){
+      let timer = 30;
+      timerEl.textContent = timer;
+      clearInterval(interval);
+      interval = setInterval(()=>{
+        timer--;
+        timerEl.textContent = timer;
+        if(timer <= 0){
+          clearInterval(interval);
+          timerEl.textContent = 'LIVE';
+        }
+      },1000);
+    }
+
+    document.getElementById('startTimer').addEventListener('change', e=>{
+      if(e.target.checked) startCountdown();
+      else clearInterval(interval);
+    });
+
+    document.getElementById('selectTeamA').addEventListener('change', e=>{
+      document.getElementById('teamAName').textContent = e.target.value;
+    });
+    document.getElementById('selectTeamB').addEventListener('change', e=>{
+      document.getElementById('teamBName').textContent = e.target.value;
+    });
+    document.getElementById('selectMap').addEventListener('change', e=>{
+      const map = e.target.value;
+      document.getElementById('mapName').textContent = map;
+      bgImage.style.opacity = 0;
+      setTimeout(()=>{
+        bgImage.src = `assets/maps/${map}.jpg`;
+        bgImage.style.opacity = 1;
+      },300);
+    });
+  </script>
+</body>
+</html>

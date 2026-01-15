@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Tournament Overlay</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: white;
+            background-color: transparent;
+            overflow: hidden;
+        }
+        
+        .overlay-container {
+            width: 1920px;
+            height: 1080px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Scene containers */
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .scene.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        /* Intro Scene */
+        .intro-scene {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .tournament-title {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(90deg, #f43f5e 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .teams-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4rem;
+            margin: 2rem 0;
+        }
+        
+        .team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .team-logo {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .team-logo img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        
+        .team-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .vs-text {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #f43f5e;
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);
+            margin: 0 2rem;
+        }
+        
+        /* Match Scene */
+        .match-scene {
+            background: transparent;
+            padding: 2rem;
+        }
+        
+        .scoreboard {
+            background:transparent;
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 2rem auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .team-score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .team-a .team-name { color: #f43f5e; }
+        .team-b .team-name { color: #3b82f6; }
+        
+        .score {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 0.5rem 0;
+        }
+        
+        .map-info {
+            text-align: center;
+            margin: 0 3rem;
+        }
+        
+        .map-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .match-timer {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+        
+        /* Players List */
+        .players-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .team-players {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 1rem;
+            width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .team-players.team-a { border-left: 4px solid #f43f5e;}
+        .team-players.team-b { border-right: 4px solid #3b82f6;}
+        
+        .team-players h3 {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .player-card {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            height: 60px; /* Fixed height for consistency */
+        }
+        
+        .player-card:hover {
+            background: rgba(51, 65, 85, 0.5);
+            transform: translateX(5px);
+        }
+        
+        .player-agent {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-right: 0.75rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .agent-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .player-info {
+            flex: 1;
+            min-width: 0; /* Prevents text overflow */
+        }
+        
+        .player-name {
+            font-weight: 600;
+            margin-bottom: 0.1rem;
+        }
+        
+        .player-stats {
+            display: flex;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .player-stats span {
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .player-stats i {
+            margin-right: 0.25rem;
+            font-size: 0.7rem;
+        }
+        
+        /* Scoreboard Scene */
+        .scoreboard-scene {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 2rem;
+        }
+        
+        .match-scoreboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .scoreboard-header {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .scoreboard-teams {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            align-items: center;
+        }
+        
+        .scoreboard-team {
+            display: flex;
+            align-items: center;
+        }
+        
+        .scoreboard-team .team-logo {
+            width: 80px;
+            height: 80px;
+            margin-right: 1.5rem;
+        }
+        
+        .scoreboard-team .team-name {
+            font-size: 2rem;
+            margin: 0;
+        }
+        
+        .scoreboard-score {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0 2rem;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .scoreboard-players {
+            display: flex;
+        }
+        
+        .scoreboard-team-players {
+            flex: 1;
+            padding: 1rem 0;
+        }
+        
+        .scoreboard-player {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .scoreboard-player.team-a { background: rgba(244, 63, 94, 0.05); }
+        .scoreboard-player.team-b { background: rgba(59, 130, 246, 0.05); }
+        
+        .player-number {
+            width: 30px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .player-agent-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 0 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .player-stats-extended {
+            display: flex;
+            flex: 1;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .player-kda {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .player-kda span {
+            width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        /* Winner Scene */
+        .winner-scene {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .winner-trophy {
+            font-size: 8rem;
+            color: #f59e0b;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        .winner-text {
+            font-size: 5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #f59e0b 0%, #f43f5e 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .winner-team {
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 1rem 0 2rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        .match-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            color: #94a3b8;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-top: 0.5rem;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Killfeed */
+        .killfeed {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 100;
+        }
+        
+        .killfeed-item {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #f43f5e;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+            transform-origin: top right;
+        }
+        
+        .killfeed-item.team-b { border-left-color: #3b82f6; }
+        
+        .killfeed-item .killer { font-weight: 600; color: #f43f5e; }
+        .killfeed-item.team-b .killer { color: #3b82f6; }
+        
+        .killfeed-item .victim { font-weight: 600; }
+        
+        .killfeed-weapon {
+            margin: 0 0.5rem;
+            font-size: 1rem;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+
+        :root{
+      --accent: #ff4655;
+      --dark: #0e0e10;
+      --light: #ffffff;
+      --secondary: #1f1f23;
+      --glass: rgba(20,20,25,0.55);
+    }
+    *{box-sizing:border-box;font-family:Poppins, sans-serif}
+    /* html,body{margin:0;height:100%;background:#000;overflow:hidden;color:#fff} */
+
+    .bg-image{position:fixed;inset:0;z-index:0;overflow:hidden}
+    .bg-image img{width:100%;height:100%;object-fit:cover;filter:brightness(0.25) saturate(1.2);transition:opacity 0.5s ease-in-out}
+
+    .tourney-logo{position:absolute;top:5px;left:50%;transform:translateX(-50%);z-index:10;text-align:center}
+    .tourney-logo img{height:90px;display:block;margin:0 auto}
+    .tourney-heading{font-size:22px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:8px;color:var(--accent)}
+
+    .sponsor{position:absolute;bottom:90px;z-index:10}
+    .sponsor.left{left:30px}
+    .sponsor.right{right:30px}
+    .sponsor img{height:80px;filter:drop-shadow(0 0 10px rgba(0,0,0,0.7))}
+
+    .match-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:40px;z-index:5;background:var(--glass);border:2px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 60px;backdrop-filter:blur(8px);box-shadow:0 0 50px rgba(0,0,0,0.6)}
+
+    .team{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;width:280px}
+    .team img{width:120px;height:120px;object-fit:contain;border-radius:12px;background:#fff;padding:10px}
+    .team h2{margin:0;font-size:26px;font-weight:700;text-transform:uppercase}
+
+    .vs{font-size:54px;font-weight:800;color:var(--accent);text-shadow:0 0 20px rgba(255,70,85,0.7)}
+
+    .info-bar{position:absolute;top:calc(50% + 170px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:40px;padding:14px 28px;background:var(--secondary);border-radius:50px;font-weight:600;letter-spacing:0.5px}
+
+    .info-bar div strong{color:var(--accent)}
+
+    #matchTimer{font-size:22px;font-weight:700;color:var(--accent)}
+
+    .control-panel{position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(0,0,0,0.6);padding:8px 16px;border-radius:12px;font-size:13px;display:flex;align-items:center;gap:10px}
+    .control-panel select{padding:4px 8px;border:none;border-radius:5px;background:#1f1f23;color:#fff}
+    .switch{position:relative;display:inline-block;width:36px;height:20px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:20px}
+    .slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:white;transition:.4s;border-radius:50%}
+    input:checked + .slider{background-color:var(--accent)}
+    input:checked + .slider:before{transform:translateX(16px)}
+
+    @media (max-width:900px){
+      .match-card{flex-direction:column;padding:20px}
+      .team{width:auto}
+      .info-bar{flex-direction:column;gap:10px;top:calc(50% + 200px)}
+    }
+    </style>
+</head>
+<body>
+    <div class="overlay-container">
+        <!-- Intro Scene -->
+        <div id="intro" class="scene intro-scene active">
+              <div class="bg-image" id="bgImage">
+    <img src="static/maps/Ascent.jpg" alt="Background">
+  </div>
+
+  <div class="tourney-logo">
+    <img src="static/tournament_logo.png" alt="Tournament">
+    <div class="tourney-heading">Valorant Championship Finals</div>
+  </div>
+
+  <div class="match-card">
+    <div class="team" id="teamA">
+      <img src="static/team_a.png" alt="Team A">
+      <h2 id="teamAName">Team Alpha</h2>
+    </div>
+    <div class="vs">VS</div>
+    <div class="team" id="teamB">
+      <img src="static/team_b.png" alt="Team B">
+      <h2 id="teamBName">Team Bravo</h2>
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <div>MAP: <strong id="mapName">Ascent</strong></div>
+    <div>ROUND STARTS IN: <strong id="matchTimer">30</strong>s</div>
+  </div>
+
+  <div class="sponsor left"><img src="static/sponsor_left.gif" alt="Left Sponsor"></div>
+  <div class="sponsor right"><img src="static/sponsor_right.gif" alt="Right Sponsor"></div>
+
+  <div class="control-panel">
+    <label>Team A</label>
+    <select id="selectTeamA">
+      <option>Team Alpha</option>
+      <option>Team Bravo</option>
+      <option>Team Delta</option>
+      <option>Team Phoenix</option>
+    </select>
+    <label>Team B</label>
+    <select id="selectTeamB">
+      <option>Team Bravo</option>
+      <option>Team Alpha</option>
+      <option>Team Delta</option>
+      <option>Team Phoenix</option>
+    </select>
+    <label>Map</label>
+    <select id="selectMap">
+      <option>Ascent</option>
+      <option>Bind</option>
+      <option>Haven</option>
+      <option>Split</option>
+    </select>
+    <label style="font-size:12px">Start Timer</label>
+    <label class="switch"><input type="checkbox" id="startTimer"><span class="slider"></span></label>
+  </div>
+            <!-- <h1 class="tournament-title">Valorant Tournament</h1>
+            <div class="teams-container">
+                <div class="team team-a">
+                    <div class="team-logo" id="team-a-logo">
+                        <img src="" alt="Team A" id="team-a-logo-img">
+                    </div>
+                    <div class="team-name" id="intro-team-a-name">TEAM A</div>
+                </div>
+                <div class="vs-text">VS</div>
+                <div class="team team-b">
+                    <div class="team-logo" id="team-b-logo">
+                        <img src="" alt="Team B" id="team-b-logo-img">
+                    </div>
+                    <div class="team-name" id="intro-team-b-name">TEAM B</div>
+                </div>
+            </div>
+            <div class="match-info">
+                <div class="map-name" id="map-name">Ascent</div>
+                <div class="match-time" id="match-time">Best of 3</div>
+            </div> -->
+        </div>
+        
+        <!-- Match Scene -->
+        <div id="match" class="scene match-scene">
+            <div class="scoreboard">
+                <div class="team-score team-a">
+                    <div class="team-name" id="match-team-a-name">TEAM A</div>
+                    <div class="score" id="team-a-score">0</div>
+                </div>
+                
+                <div class="map-info">
+                    <div class="map-name">Ascent</div>
+                    <div class="match-timer" id="match-timer">00:00</div>
+                </div>
+                
+                <div class="team-score team-b">
+                    <div class="team-name" id="match-team-b-name">TEAM B</div>
+                    <div class="score" id="team-b-score">0</div>
+                </div>
+            </div>
+            
+            <div class="players-container">
+                <div class="team-players team-a">
+                    <h3>TEAM A</h3>
+                    <div id="team-a-players">
+                        <!-- Player cards will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="team-players team-b">
+                    <h3>TEAM B</h3>
+                    <div id="team-b-players">
+                        <!-- Player cards will be inserted here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Killfeed -->
+            <div class="killfeed" id="killfeed">
+                <!-- Killfeed items will be added here -->
+            </div>
+        </div>
+        
+        <!-- Scoreboard Scene -->
+        <div id="scoreboard" class="scene scoreboard-scene">
+            <div class="match-scoreboard">
+                <div class="scoreboard-header">
+                    <div class="map-name">MATCH STATISTICS</div>
+                    <div class="match-timer" style="margin-left: auto;">Round 12 / 24</div>
+                </div>
+                
+                <div class="scoreboard-teams">
+                    <div class="scoreboard-team">
+                        <div class="team-logo" id="scoreboard-team-a-logo">
+                            <img src="" alt="Team A" id="scoreboard-team-a-logo-img">
+                        </div>
+                        <div class="team-name" id="scoreboard-team-a-name">TEAM A</div>
+                    </div>
+                    
+                    <div class="scoreboard-score">
+                        <div id="scoreboard-team-a-score">0</div>
+                        <div>:</div>
+                        <div id="scoreboard-team-b-score">0</div>
+                    </div>
+                    
+                    <div class="scoreboard-team" style="flex-direction: row-reverse;">
+                        <div class="team-logo" id="scoreboard-team-b-logo">
+                            <img src="" alt="Team B" id="scoreboard-team-b-logo-img">
+                        </div>
+                        <div class="team-name" id="scoreboard-team-b-name">TEAM B</div>
+                    </div>
+                </div>
+                
+                <div class="scoreboard-players">
+                    <!-- Team A Players -->
+                    <div class="scoreboard-team-players" id="scoreboard-team-a-players">
+                        <!-- Player data will be inserted here by JavaScript -->
+                    </div>
+                    
+                    <!-- Team B Players -->
+                    <div class="scoreboard-team-players" id="scoreboard-team-b-players">
+                        <!-- Player data will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Winner Scene -->
+        <div id="winner" class="scene winner-scene">
+            <div class="winner-trophy">🏆</div>
+            <div class="winner-text">Winner</div>
+            <div class="winner-team" id="winner-team">TEAM A</div>
+            
+            <div class="teams-container" style="margin-top: 3rem;">
+                <div class="team team-a" style="text-align: center;">
+                    <div class="team-name" style="font-size: 2rem; margin-bottom: 1rem;">TEAM A</div>
+                    <div class="team-score" style="font-size: 3rem; font-weight: 800;">13</div>
+                </div>
+                
+                <div style="font-size: 2rem; margin: 0 4rem; align-self: center;">
+                    FINAL SCORE
+                </div>
+                
+                <div class="team team-b" style="text-align: center;">
+                    <div class="team-name" style="font-size: 2rem; margin-bottom: 1rem;">TEAM B</div>
+                    <div class="team-score" style="font-size: 3rem; font-weight: 800;">11</div>
+                </div>
+            </div>
+            
+            <div class="match-stats">
+                <div class="stat-item">
+                    <div>MATCH DURATION</div>
+                    <div class="stat-value" id="match-duration">32:45</div>
+                </div>
+                <div class="stat-item">
+                    <div>BEST PLAYER</div>
+                    <div class="stat-value" id="best-player">Player1</div>
+                </div>
+                <div class="stat-item">
+                    <div>BEST AGENT</div>
+                    <div class="stat-value" id="best-agent">Jett</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentScene = 'intro';
+        
+        // Load team data from localStorage if available
+        const loadTeamData = (team) => {
+            const savedData = localStorage.getItem(`valo_overlay_${team}`);
+            if (savedData) {
+                try {
+                    return JSON.parse(savedData);
+                } catch (e) {
+                    console.error('Error parsing saved team data:', e);
+                }
+            }
+            return { players: [] };
+        };
+        
+        // Save team data to localStorage
+        const saveTeamData = (team, data) => {
+            try {
+                localStorage.setItem(`valo_overlay_${team}`, JSON.stringify(data));
+            } catch (e) {
+                console.error('Error saving team data:', e);
+            }
+        };
+        
+        let teamAData = loadTeamData('teamA');
+        let teamBData = loadTeamData('teamB');
+        
+        // Initialize WebSocket connection
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsUrl = protocol + window.location.host + '/ws';
+        const ws = new WebSocket(wsUrl);
+        
+        // WebSocket error handling
+        ws.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+        
+        // WebSocket close handling
+        ws.onclose = function() {
+            console.log('WebSocket connection closed. Attempting to reconnect...');
+            // Attempt to reconnect after 3 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        };
+        
+        // Function to switch scenes
+        function switchScene(scene) {
+            // Hide all scenes
+            document.querySelectorAll('.scene').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show the selected scene
+            const sceneElement = document.getElementById(scene);
+            if (sceneElement) {
+                sceneElement.classList.add('active');
+                currentScene = scene;
+            }
+        }
+        
+        // Team data is already initialized at the top
+        
+        // Function to update team information
+        function updateTeam(team, data) {
+            // Update the global team data
+            if (team === 'team-a') {
+                teamAData = { ...teamAData, ...data };
+                // Save to localStorage
+                saveTeamData('teamA', teamAData);
+                if (data.players) {
+                    // Preserve existing agent selections when updating players
+                    teamAData.players = data.players.map((player, index) => ({
+                        ...(teamAData.players[index] || {}),
+                        ...player
+                    }));
+                }
+            } else if (team === 'team-b') {
+                teamBData = { ...teamBData, ...data };
+                // Save to localStorage
+                saveTeamData('teamB', teamBData);
+                if (data.players) {
+                    // Preserve existing agent selections when updating players
+                    teamBData.players = data.players.map((player, index) => ({
+                        ...(teamBData.players[index] || {}),
+                        ...player
+                    }));
+                }
+            }
+            // Update team names in all locations
+            document.querySelectorAll(`.${team}-name`).forEach(el => {
+                el.textContent = data.name || `Team ${team.split('-').pop().toUpperCase()}`;
+            });
+            
+            // Update team names in specific sections
+            const introTeamName = document.getElementById(`intro-${team}-name`);
+            if (introTeamName) {
+                introTeamName.textContent = data.name || `Team ${team.split('-').pop().toUpperCase()}`;
+            }
+            
+            const matchTeamName = document.getElementById(`match-${team}-name`);
+            if (matchTeamName) {
+                matchTeamName.textContent = data.name || `Team ${team.split('-').pop().toUpperCase()}`;
+            }
+            
+            // Update team scores
+            document.querySelectorAll(`#${team}-score`).forEach(el => {
+                el.textContent = data.score || '0';
+            });
+            // Update scoreboard team names and scores
+            if (document.getElementById(`scoreboard-${team}-name`)) {
+                document.getElementById(`scoreboard-${team}-name`).textContent = data.name || `Team ${team.toUpperCase()}`;
+            }
+            if (document.getElementById(`scoreboard-${team}-score`)) {
+                document.getElementById(`scoreboard-${team}-score`).textContent = data.score || '0';
+            }
+            
+            // Update team logos in scoreboard
+            const logoImg = document.getElementById(`scoreboard-${team}-logo-img`);
+            if (logoImg && data.logo) {
+                logoImg.src = data.logo;
+                logoImg.style.display = 'block';
+            }
+            
+            // Update player statistics in scoreboard
+            if (data.players && Array.isArray(data.players)) {
+                const container = document.getElementById(`scoreboard-${team}-players`);
+                if (container) {
+                    container.innerHTML = '';
+                    
+                    data.players.forEach((player, index) => {
+                        if (!player.name && index > 0) return; // Skip empty player slots after the first one
+                        
+                        const playerEl = document.createElement('div');
+                        playerEl.className = `scoreboard-player ${team}`;
+                        playerEl.innerHTML = `
+                            <div class="player-number">${index + 1}</div>
+                            <div class="player-agent-icon" style="width: 32px; height: 32px; display: flex; justify-content: center; align-items: center;">
+                                ${player.agent ? `
+                                    <img src="static/Original Agent Icons/${player.agent.toLowerCase().replace(/[^a-z0-9]/g, '')}.png" 
+                                         alt="${player.agent}" 
+                                         style="width: 100%; height: 100%; object-fit: contain;"
+                                         onerror="this.onerror=null; this.src='assets/agents/default.png';">
+                                ` : `
+                                    <i class="fas fa-user" style="font-size: 16px; color: rgba(255,255,255,0.5);"></i>
+                                `}
+                            </div>
+                            <div class="player-info">
+                                <div class="player-name">${player.name || `Player ${index + 1}`}</div>
+                                <div class="player-stats">
+                                    <span><i class="fas fa-crosshairs"></i> ${player.kills || 0}</span>
+                                    <span><i class="fas fa-skull"></i> ${player.deaths || 0}</span>
+                                    <span><i class="fas fa-handshake"></i> ${player.assists || 0}</span>
+                                </div>
+                            </div>
+                            <div class="player-kda">
+                                <span>${player.kills || 0}</span>
+                                <span>/</span>
+                                <span>${player.deaths || 0}</span>
+                                <span>/</span>
+                                <span>${player.assists || 0}</span>
+                            </div>
+                        `;
+                        container.appendChild(playerEl);
+                    });
+                }
+            }
+            // Update team names
+            document.querySelectorAll(`.${team}-name`).forEach(el => {
+                el.textContent = data.name || el.textContent;
+            });
+            
+            // Update team scores
+            document.querySelectorAll(`#${team}-score`).forEach(el => {
+                el.textContent = data.score || '0';
+            });
+            
+            // Update team logos
+            if (data.logo) {
+                document.querySelectorAll(`#${team}-logo-img`).forEach(img => {
+                    img.src = data.logo;
+                    img.style.display = 'block';
+                });
+            }
+            
+            // Update players
+            if (data.players && Array.isArray(data.players)) {
+                const playersContainer = document.getElementById(`${team}-players`);
+                if (playersContainer) {
+                    playersContainer.innerHTML = '';
+                    
+                    data.players.forEach((player, index) => {
+                        if (!player.name && index > 0) return; // Skip empty player slots after the first one
+                        
+                        const playerEl = document.createElement('div');
+                        playerEl.className = 'player-card';
+                        playerEl.innerHTML = `
+                            <div class="player-agent" style="display: flex; justify-content: center; align-items: center;">
+                                ${player.agent ? `
+                                    <img src="static/Original Agent Icons/${player.agent.toLowerCase().replace(/[^a-z0-9]/g, '')}.png" 
+                                         alt="${player.agent}" 
+                                         class="agent-icon"
+                                         style="width: 100%; height: 100%; object-fit: contain;"
+                                         onerror="this.onerror=null; this.src='assets/agents/default.png';">
+                                ` : `
+                                    <i class="fas fa-user" style="font-size: 24px; color: rgba(255,255,255,0.5);"></i>
+                                `}
+                            </div>
+                            <div class="player-info">
+                                <div class="player-name">${player.name || `Player ${index + 1}`}</div>
+                                <div class="player-stats">
+                                    <span><i class="fas fa-crosshairs"></i> ${player.kills || 0}</span>
+                                    <span><i class="fas fa-skull"></i> ${player.deaths || 0}</span>
+                                    <span><i class="fas fa-handshake"></i> ${player.assists || 0}</span>
+                                </div>
+                            </div>
+                            ${player.weapon ? `
+                            <div class="player-weapon" style="display: flex; align-items: center; gap: 4px;">
+                                <img src="static/Weapon Images/${player.weapon.toLowerCase().replace(/[^a-z0-9]/g, '')}.png" 
+                                     alt="${player.weapon}" 
+                                     class="weapon-icon"
+                                     width="35"
+                                     height="35"
+                                     onerror="this.onerror=null; this.src='assets/weapons/default.png';">
+                                <span class="weapon-name">${player.weapon}</span>
+                            </div>` : ''}
+                        `;
+                        playersContainer.appendChild(playerEl);
+                    });
+                }
+            }
+        }
+        
+        // Function to add a kill to the killfeed
+        function addKill(killer, victim, weapon, isHeadshot = false) {
+            const killfeed = document.getElementById('killfeed');
+            if (!killfeed) return;
+            
+            const killItem = document.createElement('div');
+            killItem.className = `killfeed-item ${killer.team === 'a' ? 'team-a' : 'team-b'}`;
+            
+            const killText = document.createElement('div');
+            killText.innerHTML = `
+                <span class="killer">${killer.name}</span>
+                <span class="killfeed-weapon">${weapon || '🔫'}</span>
+                <span class="victim">${victim.name}</span>
+            `;
+            
+            if (isHeadshot) {
+                const headshotIcon = document.createElement('span');
+                headshotIcon.textContent = '💀';
+                headshotIcon.style.marginLeft = '0.5rem';
+                killText.appendChild(headshotIcon);
+            }
+            
+            killItem.appendChild(killText);
+            killfeed.insertBefore(killItem, killfeed.firstChild);
+            
+            // Remove old killfeed items if there are too many
+            while (killfeed.children.length > 10) {
+                killfeed.removeChild(killfeed.lastChild);
+            }
+            
+            // Auto-remove after some time
+            setTimeout(() => {
+                killItem.style.opacity = '0';
+                killItem.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    if (killItem.parentNode === killfeed) {
+                        killfeed.removeChild(killItem);
+                    }
+                }, 500);
+            }, 8000);
+        }
+        
+        // Function to merge player data while preserving agents
+        const mergePlayerData = (existingPlayers, newPlayers) => {
+            if (!Array.isArray(newPlayers)) return existingPlayers;
+            
+            return newPlayers.map((player, index) => {
+                const existingPlayer = existingPlayers[index] || {};
+                return {
+                    ...player,
+                    agent: player.agent || existingPlayer.agent || ''
+                };
+            });
+        };
+
+        // Handle WebSocket messages
+        ws.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Received WebSocket message:', data);
+                
+                // Handle initial data
+                if (data.type === 'initial_data') {
+                    // Store the current agent data before updating
+                    const currentTeamAPlayers = [...(teamAData.players || [])];
+                    const currentTeamBPlayers = [...(teamBData.players || [])];
+                    
+                    // Update team A data
+                    if (data.team_a) {
+                        const savedData = loadTeamData('teamA');
+                        const mergedPlayers = mergePlayerData(
+                            savedData.players || [],
+                            data.team_a.players || []
+                        );
+                        
+                        teamAData = {
+                            ...data.team_a,
+                            players: mergedPlayers
+                        };
+                        
+                        // Save the merged data
+                        saveTeamData('teamA', teamAData);
+                        updateTeam('team-a', teamAData);
+                    }
+                    
+                    // Update team B data
+                    if (data.team_b) {
+                        const savedData = loadTeamData('teamB');
+                        const mergedPlayers = mergePlayerData(
+                            savedData.players || [],
+                            data.team_b.players || []
+                        );
+                        
+                        teamBData = {
+                            ...data.team_b,
+                            players: mergedPlayers
+                        };
+                        
+                        // Save the merged data
+                        saveTeamData('teamB', teamBData);
+                        updateTeam('team-b', teamBData);
+                    }
+                    
+                    if (data.scene) switchScene(data.scene);
+                    return;
+                }
+
+                // Handle team updates
+                if (data.type === 'update_team' && data.data) {
+                    const team = data.team;
+                    const teamData = data.data;
+                    
+                    if (team === 'team-a') {
+                        const currentPlayers = [...(teamAData.players || [])];
+                        const updatedTeamData = JSON.parse(JSON.stringify(teamData));
+                        
+                        // Merge with existing data
+                        teamAData = { ...teamAData, ...updatedTeamData };
+                        
+                        // Handle players array updates
+                        if (Array.isArray(updatedTeamData.players)) {
+                            teamAData.players = teamAData.players || [];
+                            
+                            updatedTeamData.players.forEach((player, index) => {
+                                if (!teamAData.players[index]) {
+                                    teamAData.players[index] = {};
+                                }
+                                
+                                // Preserve agent if it exists in current data and not being updated
+                                const currentAgent = currentPlayers[index]?.agent;
+                                teamAData.players[index] = {
+                                    ...teamAData.players[index],
+                                    ...player,
+                                    agent: player.agent || currentAgent || teamAData.players[index]?.agent || ''
+                                };
+                            });
+                        }
+                        
+                        updateTeam('team-a', teamAData);
+                    } 
+                    else if (team === 'team-b') {
+                        const currentPlayers = [...(teamBData.players || [])];
+                        const updatedTeamData = JSON.parse(JSON.stringify(teamData));
+                        
+                        // Merge with existing data
+                        teamBData = { ...teamBData, ...updatedTeamData };
+                        
+                        // Handle players array updates
+                        if (Array.isArray(updatedTeamData.players)) {
+                            teamBData.players = teamBData.players || [];
+                            
+                            updatedTeamData.players.forEach((player, index) => {
+                                if (!teamBData.players[index]) {
+                                    teamBData.players[index] = {};
+                                }
+                                
+                                // Preserve agent if it exists in current data and not being updated
+                                const currentAgent = currentPlayers[index]?.agent;
+                                teamBData.players[index] = {
+                                    ...teamBData.players[index],
+                                    ...player,
+                                    agent: player.agent || currentAgent || teamBData.players[index]?.agent || ''
+                                };
+                            });
+                        }
+                        
+                        updateTeam('team-b', teamBData);
+                    }
+                    return;
+                }
+
+                // Handle other message types
+                if (data.type === 'switch_scene') {
+                    switchScene(data.scene);
+                } 
+                else if (data.type === 'add_kill') {
+                    addKill(data.killer, data.victim, data.weapon, data.isHeadshot);
+                }
+                
+                // Update match time if present
+                if (data.match_time) {
+                    document.querySelectorAll('.match-timer').forEach(el => {
+                        el.textContent = data.match_time;
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error processing WebSocket message:', error);
+            }
+            
+            // Update match time in scoreboard if it exists
+            if (data.match_time) {
+                const timerElement = document.querySelector('.scoreboard-header .match-timer');
+                if (timerElement) {
+                    timerElement.textContent = data.match_time;
+                }
+            }
+            
+            // Update match time
+            if (data.match_time) {
+                document.querySelectorAll('.match-timer').forEach(el => {
+                    el.textContent = data.match_time;
+                });
+            }
+            
+            // Handle killfeed updates
+            if (data.killfeed && Array.isArray(data.killfeed)) {
+                data.killfeed.forEach(kill => {
+                    addKill(
+                        { name: kill.killer, team: kill.team },
+                        { name: kill.victim, team: kill.victim_team },
+                        kill.weapon,
+                        kill.is_headshot
+                    );
+                });
+            }
+            
+            // Update winner scene
+            if (currentScene === 'winner' && data.team_a && data.team_b) {
+                const winnerTeam = data.team_a.score > data.team_b.score ? data.team_a : data.team_b;
+                document.getElementById('winner-team').textContent = winnerTeam.name;
+                
+                // Update scores in winner scene
+                document.querySelector('.winner-scene .team-a .team-score').textContent = data.team_a.score;
+                document.querySelector('.winner-scene .team-b .team-score').textContent = data.team_b.score;
+                document.querySelector('.winner-scene .team-a .team-name').textContent = data.team_a.name;
+                document.querySelector('.winner-scene .team-b .team-name').textContent = data.team_b.name;
+            }
+        };
+        
+        // Function to reset all weapons
+        function resetAllWeapons() {
+            // Reset weapons for Team A
+            if (window.teamAData?.players) {
+                window.teamAData.players.forEach(player => {
+                    if (player) {
+                        player.weapon = '';  // Only reset weapon, keep agent and other data
+                    }
+                });
+            }
+
+            // Reset weapons for Team B
+            if (window.teamBData?.players) {
+                window.teamBData.players.forEach(player => {
+                    if (player) {
+                        player.weapon = '';  // Only reset weapon, keep agent and other data
+                    }
+                });
+            }
+
+            // Trigger UI update
+            if (window.teamAData) updateTeam('team-a', window.teamAData);
+            if (window.teamBData) updateTeam('team-b', window.teamBData);
+        }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add click handler for reset weapons button
+            document.getElementById('resetWeapons')?.addEventListener('click', resetAllWeapons);
+            // Set initial scene
+            switchScene('intro');
+            
+            // Request initial data
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'get_initial_data' }));
+            } else {
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({ type: 'get_initial_data' }));
+                };
+            }
+        });
+
+
+
+         const timerEl = document.getElementById('matchTimer');
+    const bgImage = document.querySelector('#bgImage img');
+    let interval;
+
+    function startCountdown(){
+      let timer = 30;
+      timerEl.textContent = timer;
+      clearInterval(interval);
+      interval = setInterval(()=>{
+        timer--;
+        timerEl.textContent = timer;
+        if(timer <= 0){
+          clearInterval(interval);
+          timerEl.textContent = 'LIVE';
+        }
+      },1000);
+    }
+
+    document.getElementById('startTimer').addEventListener('change', e=>{
+      if(e.target.checked) startCountdown();
+      else clearInterval(interval);
+    });
+
+    document.getElementById('selectTeamA').addEventListener('change', e=>{
+      document.getElementById('teamAName').textContent = e.target.value;
+    });
+    document.getElementById('selectTeamB').addEventListener('change', e=>{
+      document.getElementById('teamBName').textContent = e.target.value;
+    });
+    document.getElementById('selectMap').addEventListener('change', e=>{
+      const map = e.target.value;
+      document.getElementById('mapName').textContent = map;
+      bgImage.style.opacity = 0;
+      setTimeout(()=>{
+        bgImage.src = `static/maps/${map}.jpg`;
+        bgImage.style.opacity = 1;
+      },300);
+    });
+    </script>
+</body>
+</html>
